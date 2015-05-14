@@ -26,19 +26,19 @@ class DbManager extends BaseDbManager implements ManagerInterface
      * @param  array    $excludeItems Items that should be excluded from result array.
      * @return array
      */
-    public function getItems($type = null, $excludeItems = [])
+    public function getItems($type = null, $excludeItems = [], $tenant = null)
     {
         $query = (new Query())
             ->from($this->itemTable);
 
         if ($type !== null) {
-            $query->where(['type' => $type]);
+            $query->where([['type' => $type], $this->tenantColumn.' != :tenant', ['tenant' => $tenant]]);
         } else {
             $query->orderBy('type');
         }
 
         foreach ($excludeItems as $name) {
-            $query->andWhere('name != :item', ['item' => $name]);
+            $query->andWhere(['name != :item', ['item' => $name], $this->tenantColumn.' != :tenant', ['tenant' => $tenant]] );
         }
 
         $items = [];
